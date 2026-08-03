@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#667eea">
+  <meta http-equiv="refresh" content="0; url=public/index.html">
+  <link rel="manifest" href="manifest.json">
+  <title>Free Group Chat</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+    }
+
+    .container {
+      display: flex;
+      width: 100%;
+      max-width: 1200px;
+      height: 90vh;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 300px;
+      background: #2c3e50;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #34495e;
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-toggle {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      background: #667eea;
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    .sidebar-header {
+      padding: 20px;
+      border-bottom: 2px solid #34495e;
+      text-align: center;
+    }
+
+    .sidebar-header h2 {
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+
+    .user-display {
+      background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+      padding: 12px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 13px;
+      border-left: 4px solid #667eea;
+    }
+
+    .user-display strong {
+      display: block;
+      color: #667eea;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    .logout-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 10px;
+      transition: all 0.3s;
+    }
+
+    .logout-btn:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+    }
+
+    .create-group {
+      padding: 15px;
+      border-bottom: 2px solid #667eea;
+      background: linear-gradient(135deg, rgba(102,126,234,0.1) 0%, rgba(118,75,162,0.1) 100%);
+      margin: 10px;
+      border-radius: 8px;
+    }
+
+    .create-group h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+      color: #2c3e50;
+    }
+
+    .create-group input {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .create-group input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .create-group button {
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 15px;
+      transition: transform 0.2s;
+    }
+
+    .create-group button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102,126,234,0.4);
+    }
+
+    .groups-section {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px 10px;
+    }
+
+    .groups-section h3 {
+      font-size: 15px;
+      margin-bottom: 12px;
+      color: #bdc3c7;
+      padding: 0 5px;
+    }
+
+    .invites-box {
+      margin: 12px 5px 14px;
+      padding: 10px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+    }
+
+    .invite-item {
+      margin-top: 8px;
+      padding: 8px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .invite-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .invite-actions button {
+      flex: 1;
+      padding: 6px 8px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 11px;
+      color: white;
+    }
+
+    .invite-actions .accept-btn {
+      background: #27ae60;
+    }
+
+    .invite-actions .decline-btn {
+      background: #e74c3c;
+    }
+
+    .group-item {
+      padding: 12px 10px;
+      margin: 8px 5px;
+      background: #34495e;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid transparent;
+    }
+
+    .group-item:hover {
+      background: #3d5470;
+      border-left-color: #667eea;
+      transform: translateX(5px);
+    }
+
+    .group-item.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-left-color: #fff;
+      box-shadow: 0 4px 12px rgba(102,126,234,0.3);
+    }
+
+    .group-delete {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 3px 8px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      display: none;
+    }
+
+    .group-item.active .group-delete {
+      display: block;
+    }
+
+    .group-delete:hover {
+      background: #c0392b;
+    }
+
+    .main-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-header {
+      background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+      padding: 20px;
+      border-bottom: 2px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    .chat-header h2 {
+      color: #2c3e50;
+      margin: 0;
+      flex: 1;
+    }
+
+    .invite-btn {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+      box-shadow: 0 2px 8px rgba(39,174,96,0.2);
+    }
+
+    .invite-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(39,174,96,0.4);
+    }
+
+    .messages-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      background: white;
+    }
+
+    .message {
+      margin: 10px 0;
+      padding: 12px 15px;
+      border-radius: 8px;
+      max-width: 70%;
+      word-wrap: break-word;
+    }
+
+    .message.own {
+      align-self: flex-end;
+      background: #667eea;
+      color: white;
+      margin-left: auto;
+    }
+
+    .message.other {
+      align-self: flex-start;
+      background: #e0e0e0;
+      color: black;
+    }
+
+    .message-header {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+
+    .message-content {
+      font-size: 14px;
+    }
+
+    .message-time {
+      font-size: 11px;
+      margin-top: 5px;
+      opacity: 0.7;
+    }
+
+    .no-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #999;
+      font-size: 18px;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 15px;
+      gap: 10px;
+      background: #f9f9f9;
+      border-top: 1px solid #ddd;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .input-area button {
+      padding: 10px 20px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .input-area button:hover {
+      background: #5568d3;
+    }
+
+    .members-panel {
+      width: 180px;
+      background: #f9f9f9;
+      border-left: 1px solid #ddd;
+      padding: 15px;
+      overflow-y: auto;
+    }
+
+    .members-panel h3 {
+      font-size: 14px;
+      margin-bottom: 10px;
+      color: #2c3e50;
+    }
+
+    .member {
+      padding: 8px;
+      background: #e0e0e0;
+      border-radius: 5px;
+      margin: 5px 0;
+      font-size: 13px;
+    }
+
+    .auth-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .auth-box {
+      background: white;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-box h1 {
+      text-align: center;
+      color: #667eea;
+      margin-bottom: 30px;
+    }
+
+    .auth-box input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    .auth-box button {
+      width: 100%;
+      padding: 12px;
+      margin: 15px 0;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .auth-box button:hover {
+      background: #5568d3;
+    }
+
+    .toggle-link {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    .toggle-link a {
+      color: #667eea;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .error {
+      color: #e74c3c;
+      margin: 10px 0;
+      padding: 10px;
+      background: #fadbd8;
+      border-radius: 5px;
+    }
+
+    .success {
+      color: #27ae60;
+      margin: 10px 0;
+      padding: 10px;
+      background: #d5f4e6;
+      border-radius: 5px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      position: relative;
+    }
+
+    .modal-content h2 {
+      margin-bottom: 20px;
+      color: #2c3e50;
+      font-size: 20px;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      cursor: pointer;
+      font-size: 28px;
+      color: #999;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        padding: 0;
+        align-items: stretch;
+      }
+
+      .container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        border-radius: 0;
+        max-width: none;
+      }
+
+      .sidebar {
+        width: 100%;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid #34495e;
+      }
+
+      .sidebar.collapsed {
+        display: none;
+      }
+
+      .sidebar-toggle {
+        display: inline-flex;
+      }
+
+      .chat-header {
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .main-area {
+        min-height: 60vh;
+      }
+
+      .input-area {
+        flex-direction: column;
+      }
+
+      .input-area button {
+        width: 100%;
+      }
+
+      .members-panel {
+        width: 100%;
+        max-height: none;
+        border-left: none;
+        border-top: 1px solid #ddd;
+      }
+
+      .message {
+        max-width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Auth Screen -->
+  <div id="authScreen" class="auth-screen">
+    <div class="auth-box">
+      <h1>💬 Chat App</h1>
+      
+        <div id="loginForm">
+        <h2 style="text-align: center; margin-bottom: 20px; font-size: 18px;">Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username" onkeypress="if(event.key==='Enter') login()" />
+        <input type="password" id="loginPassword" placeholder="Password" onkeypress="if(event.key==='Enter') login()" />
+        <button onclick="login()">Login</button>
+        <div id="loginError" class="error hidden"></div>
+        <div class="toggle-link">
+          No account? <a onclick="toggleForms()">Sign Up</a>
+        </div>
+      </div>
+
+      <div id="signupForm" class="hidden">
+        <h2 style="text-align: center; margin-bottom: 20px; font-size: 18px;">Sign Up</h2>
+        <input type="text" id="signupUsername" placeholder="Username" onkeypress="if(event.key==='Enter') signup()" />
+        <input type="password" id="signupPassword" placeholder="Password" onkeypress="if(event.key==='Enter') signup()" />
+        <button onclick="signup()">Create Account</button>
+        <div id="signupError" class="error hidden"></div>
+        <div class="toggle-link">
+          Have an account? <a onclick="toggleForms()">Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Chat App -->
+  <div id="chatApp" class="hidden">
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <h2>💬 Chat</h2>
+          <div class="user-display">
+            Logged in as: <strong id="displayUsername"></strong>
+          </div>
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <div class="create-group">
+          <h3>📝 Create New Group</h3>
+          <input type="text" id="groupInput" placeholder="Enter group name..." />
+          <button onclick="createGroup()" style="font-weight: bold;">+ Create Group</button>
+        </div>
+
+        <div class="groups-section">
+          <h3>💬 Your Groups</h3>
+          <div id="groupsList"></div>
+          <p id="noGroups" style="color: #999; font-size: 12px; margin-top: 20px; text-align: center;">No groups yet.<br/>Create one above!</p>
+
+          <div class="invites-box">
+            <strong>Pending Invites</strong>
+            <div id="invitesList"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Chat Area -->
+      <div class="main-area">
+        <div id="noChatSelected" class="no-group" style="flex-direction: column; gap: 20px; padding: 40px; text-align: center;">
+          <div style="font-size: 48px;">👋</div>
+          <h2 style="color: #333;">Welcome to Chat!</h2>
+          <p style="color: #666; font-size: 16px; max-width: 400px;">
+            👈 <strong>Create a group</strong> on the left sidebar to get started, or ask someone to invite you to theirs!
+          </p>
+          <div style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 20px; color: #555; font-size: 14px;">
+            <strong>How to use:</strong>
+            <ol style="text-align: left; margin-top: 10px;">
+              <li>📝 Type a group name on the left</li>
+              <li>➕ Click "Create Group"</li>
+              <li>👥 Click "+ Invite" to add friends</li>
+              <li>💬 Start chatting!</li>
+            </ol>
+          </div>
+        </div>
+
+        <div id="chatWindow" class="hidden" style="display: flex; flex-direction: column;">
+          <div class="chat-header">
+            <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">☰</button>
+            <h2 id="chatTitle"></h2>
+            <button class="invite-btn" onclick="showInviteModal()">+ Invite</button>
+          </div>
+
+          <div class="messages-area" id="messagesArea"></div>
+
+          <div class="input-area">
+            <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter') sendMessage()" />
+            <button onclick="sendMessage()">Send</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Members Panel -->
+      <div class="members-panel" id="membersPanel" style="display: none;">
+        <h3>Members</h3>
+        <div id="membersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invite Modal -->
+  <div id="inviteModal" class="modal hidden">
+    <div class="modal-content">
+      <span class="close-modal" onclick="closeInviteModal()">&times;</span>
+      <h2>👥 Invite People to Group</h2>
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 15px 0; font-size: 14px;">
+        <strong>How it works:</strong>
+        <div style="margin-top: 8px; color: #555; line-height: 1.5;">
+          Enter the other person's username. They will see a pending invite in their app and can accept it from the sidebar.
+        </div>
+      </div>
+      <hr style="margin: 15px 0; border: none; border-top: 1px solid #ddd;" />
+      <p style="font-size: 14px; color: #666; margin-bottom: 10px;"><strong>Invite by username:</strong></p>
+      <input type="text" id="inviteUsername" placeholder="Enter their username..." onkeypress="if(event.key==='Enter') inviteUser()" />
+      <button onclick="inviteUser()" style="width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 12px; font-weight: bold;">✓ Send Invite</button>
+      <div id="inviteMessage" class="success hidden" style="margin-top: 10px;"></div>
+    </div>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('service-worker.js').catch((err) => {
+          console.warn('Service worker registration failed:', err);
+        });
+      });
+    }
+
+    // App State
+    let currentUser = null;
+    let currentGroup = null;
+    let allUsers = {};
+    let allGroups = {};
+    let allInvites = [];
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('currentUser');
+      if (saved) {
+        currentUser = saved;
+        showChatApp();
+      } else {
+        showAuthScreen();
+      }
+      loadAllData();
+
+      // Setup modal click outside to close
+      document.getElementById('inviteModal').addEventListener('click', (e) => {
+        if (e.target.id === 'inviteModal') {
+          closeInviteModal();
+        }
+      });
+    });
+
+    // Toggle Auth Forms
+    function toggleForms() {
+      document.getElementById('loginForm').classList.toggle('hidden');
+      document.getElementById('signupForm').classList.toggle('hidden');
+      document.getElementById('loginError').classList.add('hidden');
+      document.getElementById('signupError').classList.add('hidden');
+    }
+
+    // Sign Up
+    function signup() {
+      const username = document.getElementById('signupUsername').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const errorDiv = document.getElementById('signupError');
+
+      errorDiv.classList.add('hidden');
+
+      if (!username || !password) {
+        errorDiv.textContent = 'Please enter username and password';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (username.length < 3) {
+        errorDiv.textContent = 'Username must be at least 3 characters';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      if (password.length < 3) {
+        errorDiv.textContent = 'Password must be at least 3 characters';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+      if (users[username]) {
+        errorDiv.textContent = 'Username already exists';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      users[username] = { password, createdAt: new Date().toISOString() };
+      localStorage.setItem('users', JSON.stringify(users));
+
+      alert('Account created! Now login.');
+      toggleForms();
+      document.getElementById('signupUsername').value = '';
+      document.getElementById('signupPassword').value = '';
+    }
+
+    // Login
+    function login() {
+      const username = document.getElementById('loginUsername').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      const errorDiv = document.getElementById('loginError');
+
+      errorDiv.classList.add('hidden');
+
+      if (!username || !password) {
+        errorDiv.textContent = 'Please enter username and password';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem('users') || '{}');
+      if (!users[username] || users[username].password !== password) {
+        errorDiv.textContent = 'Invalid username or password';
+        errorDiv.classList.remove('hidden');
+        return;
+      }
+
+      currentUser = username;
+      localStorage.setItem('currentUser', username);
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+      showChatApp();
+      loadAllData();
+    }
+
+    // Logout
+    function logout() {
+      currentUser = null;
+      currentGroup = null;
+      localStorage.removeItem('currentUser');
+      showAuthScreen();
+      document.getElementById('loginUsername').value = '';
+      document.getElementById('loginPassword').value = '';
+    }
+
+    // Show Auth Screen
+    function showAuthScreen() {
+      document.getElementById('authScreen').classList.remove('hidden');
+      document.getElementById('chatApp').classList.add('hidden');
+    }
+
+    // Show Chat App
+    function showChatApp() {
+      document.getElementById('authScreen').classList.add('hidden');
+      document.getElementById('chatApp').classList.remove('hidden');
+      document.getElementById('displayUsername').textContent = currentUser;
+      document.querySelector('.sidebar')?.classList.remove('collapsed');
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.querySelector('.sidebar');
+      if (sidebar) {
+        sidebar.classList.toggle('collapsed');
+      }
+    }
+
+    // Create Group
+    function createGroup() {
+      const name = document.getElementById('groupInput').value.trim();
+      if (!name) {
+        alert('Enter a group name');
+        return;
+      }
+
+      const groups = JSON.parse(localStorage.getItem('groups') || '{}');
+      const groupId = 'group_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+
+      groups[groupId] = {
+        id: groupId,
+        name: name,
+        creator: currentUser,
+        members: [currentUser],
+        createdAt: new Date().toISOString()
+      };
+
+      localStorage.setItem('groups', JSON.stringify(groups));
+      document.getElementById('groupInput').value = '';
+      loadAllData();
+    }
+
+    // Delete Group
+    function deleteGroup(groupId) {
+      if (!confirm('Delete this group?')) return;
+
+      const groups = JSON.parse(localStorage.getItem('groups') || '{}');
+      delete groups[groupId];
+      localStorage.setItem('groups', JSON.stringify(groups));
+
+      const messages = JSON.parse(localStorage.getItem('messages') || '{}');
+      if (messages[groupId]) {
+        delete messages[groupId];
+        localStorage.setItem('messages', JSON.stringify(messages));
+      }
+
+      currentGroup = null;
+      loadAllData();
+    }
+
+    // Load All Data
+    function loadAllData() {
+      allUsers = JSON.parse(localStorage.getItem('users') || '{}');
+      allGroups = JSON.parse(localStorage.getItem('groups') || '{}');
+      allInvites = JSON.parse(localStorage.getItem('invites') || '[]');
+      renderGroups();
+      renderInvites();
+    }
+
+    // Render Groups
+    function renderGroups() {
+      const userGroups = Object.values(allGroups).filter(g => g.members.includes(currentUser));
+      const html = userGroups.map(g => `
+        <div class="group-item ${currentGroup === g.id ? 'active' : ''}" onclick="selectGroup('${g.id}', '${escapeHtml(g.name)}')">
+          <span>💬 ${escapeHtml(g.name)}</span>
+          ${currentGroup === g.id && g.creator === currentUser ? `<button class="group-delete" onclick="deleteGroup('${g.id}'); event.stopPropagation();" title="Delete group">✕</button>` : ''}
+        </div>
+      `).join('');
+
+      const groupsList = document.getElementById('groupsList');
+      groupsList.innerHTML = html;
+      
+      const noGroups = document.getElementById('noGroups');
+      if (html) {
+        noGroups.style.display = 'none';
+      } else {
+        noGroups.style.display = 'block';
+      }
+    }
+
+    // Render Invites
+    function renderInvites() {
+      if (!currentUser) {
+        document.getElementById('invitesList').innerHTML = '';
+        return;
+      }
+
+      const pendingInvites = allInvites.filter(invite => invite.to === currentUser && invite.status === 'pending');
+      const invitesList = document.getElementById('invitesList');
+
+      if (!pendingInvites.length) {
+        invitesList.innerHTML = '<div style="font-size: 12px; color: #bbb; margin-top: 6px;">No pending invites.</div>';
+        return;
+      }
+
+      invitesList.innerHTML = pendingInvites.map(invite => `
+        <div class="invite-item">
+          <strong>${escapeHtml(invite.from)}</strong> invited you to <strong>${escapeHtml(invite.groupName)}</strong>
+          <div class="invite-actions">
+            <button class="accept-btn" onclick="acceptInvite('${invite.id}')">Accept</button>
+            <button class="decline-btn" onclick="declineInvite('${invite.id}')">Decline</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Accept Invite
+    function acceptInvite(inviteId) {
+      const invite = allInvites.find(item => item.id === inviteId);
+      if (!invite) return;
+
+      const groups = JSON.parse(localStorage.getItem('groups') || '{}');
+      const group = groups[invite.groupId];
+      if (!group) {
+        alert('That group no longer exists.');
+        declineInvite(inviteId);
+        return;
+      }
+
+      if (!group.members.includes(currentUser)) {
+        group.members.push(currentUser);
+        groups[invite.groupId] = group;
+        localStorage.setItem('groups', JSON.stringify(groups));
+      }
+
+      allInvites = allInvites.filter(item => item.id !== inviteId);
+      localStorage.setItem('invites', JSON.stringify(allInvites));
+      loadAllData();
+      selectGroup(invite.groupId, group.name);
+      alert(`You joined ${group.name}!`);
+    }
+
+    // Decline Invite
+    function declineInvite(inviteId) {
+      allInvites = allInvites.filter(item => item.id !== inviteId);
+      localStorage.setItem('invites', JSON.stringify(allInvites));
+      loadAllData();
+    }
+
+    // Select Group
+    function selectGroup(groupId, groupName) {
+      currentGroup = groupId;
+      document.getElementById('noChatSelected').classList.add('hidden');
+      document.getElementById('chatWindow').classList.remove('hidden');
+      document.getElementById('membersPanel').style.display = 'block';
+      document.getElementById('chatTitle').textContent = groupName;
+      renderMessages();
+      renderMembers();
+      renderGroups();
+      if (window.innerWidth <= 900) {
+        document.querySelector('.sidebar')?.classList.add('collapsed');
+      }
+    }
+
+    // Render Messages
+    function renderMessages() {
+      if (!currentGroup) return;
+      
+      const messages = JSON.parse(localStorage.getItem('messages') || '{}');
+      const groupMessages = messages[currentGroup] || [];
+
+      const html = groupMessages.map(msg => {
+        const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const isOwn = msg.user === currentUser;
+        return `
+          <div class="message ${isOwn ? 'own' : 'other'}">
+            <div class="message-header">${escapeHtml(msg.user)}</div>
+            <div class="message-content">${escapeHtml(msg.text)}</div>
+            <div class="message-time">${time}</div>
+          </div>
+        `;
+      }).join('');
+
+      const messagesArea = document.getElementById('messagesArea');
+      if (messagesArea) {
+        messagesArea.innerHTML = html;
+        setTimeout(() => {
+          messagesArea.scrollTop = messagesArea.scrollHeight;
+        }, 0);
+      }
+    }
+
+    // Render Members
+    function renderMembers() {
+      const group = allGroups[currentGroup];
+      if (!group) return;
+
+      const html = group.members.map(member => `
+        <div class="member">${escapeHtml(member)}</div>
+      `).join('');
+
+      document.getElementById('membersList').innerHTML = html;
+    }
+
+    // Send Message
+    function sendMessage() {
+      const input = document.getElementById('messageInput');
+      const text = input.value.trim();
+
+      if (!text) {
+        return;
+      }
+
+      if (!currentGroup) {
+        alert('Please select a group first');
+        return;
+      }
+
+      const messages = JSON.parse(localStorage.getItem('messages') || '{}');
+      if (!messages[currentGroup]) {
+        messages[currentGroup] = [];
+      }
+
+      messages[currentGroup].push({
+        user: currentUser,
+        text: text,
+        timestamp: new Date().toISOString()
+      });
+
+      localStorage.setItem('messages', JSON.stringify(messages));
+      input.value = '';
+      renderMessages();
+    }
+
+    // Show Invite Modal
+    function showInviteModal() {
+      if (!currentGroup) {
+        alert('Create or open a group first.');
+        return;
+      }
+      document.getElementById('inviteModal').classList.remove('hidden');
+    }
+
+    // Close Invite Modal
+    function closeInviteModal() {
+      document.getElementById('inviteModal').classList.add('hidden');
+      document.getElementById('inviteMessage').classList.add('hidden');
+      document.getElementById('inviteUsername').value = '';
+    }
+
+
+    // Invite User
+    function inviteUser() {
+      const username = document.getElementById('inviteUsername').value.trim();
+      const msg = document.getElementById('inviteMessage');
+
+      msg.classList.add('hidden');
+
+      if (!username) {
+        msg.textContent = 'Enter a username';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      if (username === currentUser) {
+        msg.textContent = 'You cannot invite yourself.';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      if (!allUsers[username]) {
+        msg.textContent = 'User not found. They need to sign up first.';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      const group = allGroups[currentGroup];
+      if (!group) {
+        msg.textContent = 'Group not found';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      if (group.members.includes(username)) {
+        msg.textContent = 'This person is already in the group.';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      const existingInvite = allInvites.find(item => item.to === username && item.groupId === currentGroup && item.status === 'pending');
+      if (existingInvite) {
+        msg.textContent = 'An invite is already pending for this person.';
+        msg.classList.remove('hidden');
+        msg.classList.add('error');
+        msg.classList.remove('success');
+        return;
+      }
+
+      allInvites.push({
+        id: 'invite_' + Date.now(),
+        from: currentUser,
+        to: username,
+        groupId: currentGroup,
+        groupName: group.name,
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      });
+
+      localStorage.setItem('invites', JSON.stringify(allInvites));
+      msg.textContent = `✓ Invite sent to ${username}. They will see it in their Pending Invites section.`;
+      msg.classList.remove('hidden', 'error');
+      msg.classList.add('success');
+      document.getElementById('inviteUsername').value = '';
+
+      loadAllData();
+      renderMembers();
+
+      setTimeout(() => {
+        closeInviteModal();
+      }, 2000);
+    }
+
+    // Escape HTML
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Listen for storage changes from other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'messages' || e.key === 'groups' || e.key === 'users' || e.key === 'invites') {
+        loadAllData();
+        if (currentGroup) {
+          renderMessages();
+          renderMembers();
+        }
+      }
+    });
+
+    // Auto-refresh every second when a group is selected
+    setInterval(() => {
+      if (currentGroup) {
+        renderMessages();
+      }
+    }, 1000);
+  </script>
+</body>
+</html>
